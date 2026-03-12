@@ -1,155 +1,197 @@
 <template>
   <a-card class="widget-card">
     <template #title>
-      <span class="widget-title-dot" />项目任务统计
+      <span class="widget-title-dot" />我的待办
     </template>
-    <template #extra>
-      <span class="completion-badge">完成率 <strong style="color: #52C41A">{{ completionRate }}%</strong></span>
-    </template>
-    <div class="task-overview">
-      <div v-for="item in overviewList" :key="item.key" class="task-stat">
-        <div class="task-stat-icon" :style="{ background: item.bg }">
-          <component :is="item.icon" :style="{ color: item.color, fontSize: '16px' }" />
+    <div class="todo-header">
+      <div class="todo-tabs">
+        <div class="todo-tab active">
+          <span class="todo-tab-text">待办</span>
+          <span class="todo-badge">{{ todoList.length }}</span>
         </div>
-        <div class="task-stat-info">
-          <span class="task-stat-num" :style="{ color: item.color }">{{ item.value }}</span>
-          <span class="task-stat-label">{{ item.name }}</span>
+        <div class="todo-tab">
+          <span class="todo-tab-text">已办</span>
+        </div>
+      </div>
+      <div class="todo-total">
+        <span>总共 {{ totalTasks }} 条</span>
+      </div>
+    </div>
+    <div class="todo-list">
+      <div v-for="item in todoList" :key="item.id" class="todo-item">
+        <div class="todo-item-content">
+          <div class="todo-item-title">{{ item.title }}</div>
+          <div class="todo-item-meta">
+            <span class="todo-item-initiator">发起人: {{ item.initiator }}</span>
+          </div>
+        </div>
+        <div class="todo-item-right">
+          <span class="todo-item-tag">常规</span>
+          <div class="todo-item-deadline">
+            <span class="todo-item-deadline-icon">📅</span>
+            <span class="todo-item-deadline-text">{{ item.deadline }}</span>
+          </div>
         </div>
       </div>
     </div>
-    <v-chart v-show="ready" :option="chartOption" autoresize lazy-init style="height: 190px; margin-top: 4px;" />
   </a-card>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
-import { use } from 'echarts/core'
-import { BarChart } from 'echarts/charts'
-import { TooltipComponent, GridComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-import VChart from 'vue-echarts'
-import { CheckCircleOutlined, SyncOutlined, ClockCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
+import { computed, ref } from 'vue'
 import { useWorkbenchStore } from '@/stores/workbench'
 
-use([BarChart, TooltipComponent, GridComponent, CanvasRenderer])
-
 const store = useWorkbenchStore()
-const stats = computed(() => store.taskStats)
-const completionRate = computed(() => store.taskCompletionRate)
-const ready = ref(false)
-onMounted(() => { ready.value = true })
 
-const overviewList = computed(() => [
-  { key: 'completed', name: '已完成', value: stats.value.completed, color: '#52C41A', bg: 'rgba(82,196,26,0.1)', icon: CheckCircleOutlined },
-  { key: 'inProgress', name: '进行中', value: stats.value.inProgress, color: '#1677FF', bg: 'rgba(22,119,255,0.1)', icon: SyncOutlined },
-  { key: 'pending', name: '待开始', value: stats.value.pending, color: '#86909C', bg: 'rgba(134,144,156,0.1)', icon: ClockCircleOutlined },
-  { key: 'overdue', name: '已逾期', value: stats.value.overdue, color: '#FF4D4F', bg: 'rgba(255,77,79,0.1)', icon: ExclamationCircleOutlined },
+// 模拟待办任务数据
+const todoList = ref([
+  {
+    id: '1',
+    title: '班组长审批',
+    initiator: '系统',
+    deadline: '2025/07/11 14:58截止',
+    status: 'pending'
+  },
+  {
+    id: '2',
+    title: '班组长审批',
+    initiator: '系统',
+    deadline: '2025/07/11 15:01截止',
+    status: 'pending'
+  },
+  {
+    id: '3',
+    title: '[PRQ12] 履约项目立项申请 待提交!',
+    initiator: '系统',
+    deadline: '2025/07/11 15:13截止',
+    status: 'pending'
+  },
+  {
+    id: '4',
+    title: '履约项目立项申请【一重项目】待您审批',
+    initiator: '系统',
+    deadline: '2025/07/11 15:13截止',
+    status: 'pending'
+  },
+  {
+    id: '5',
+    title: '新任务',
+    initiator: '系统',
+    deadline: '2025/07/11 15:21截止',
+    status: 'pending'
+  },
+  {
+    id: '6',
+    title: '班组长审批',
+    initiator: '系统',
+    deadline: '2025/07/11 15:21截止',
+    status: 'pending'
+  }
 ])
 
-const chartOption = computed(() => ({
-  tooltip: {
-    trigger: 'axis',
-    axisPointer: { type: 'shadow' },
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    borderColor: '#e8ecf0',
-    textStyle: { color: '#1D2129', fontSize: 12 },
-    formatter: (params: any[]) => {
-      let str = `<div style="font-weight:600;margin-bottom:4px;">${params[0].axisValue}</div>`
-      params.forEach((p: any) => {
-        str += `<div style="display:flex;justify-content:space-between;gap:16px;">
-          <span>${p.marker}${p.seriesName}</span>
-          <span style="font-weight:600;">${p.value} 项</span>
-        </div>`
-      })
-      return str
-    },
-  },
-  grid: { top: 8, right: 16, bottom: 4, left: 90, containLabel: false },
-  xAxis: {
-    type: 'value',
-    splitLine: { lineStyle: { color: '#F0F2F5', type: 'dashed' } },
-    axisLabel: { color: '#86909C', fontSize: 11 },
-  },
-  yAxis: {
-    type: 'category',
-    data: stats.value.byProject.map(d => d.name),
-    axisLine: { show: false },
-    axisTick: { show: false },
-    axisLabel: { color: '#4E5969', fontSize: 11, width: 80, overflow: 'truncate' },
-  },
-  series: [
-    {
-      name: '已完成',
-      type: 'bar',
-      stack: 'task',
-      data: stats.value.byProject.map(d => d.completed),
-      barMaxWidth: 16,
-      itemStyle: { color: '#52C41A', borderRadius: [0, 0, 0, 0] },
-    },
-    {
-      name: '进行中',
-      type: 'bar',
-      stack: 'task',
-      data: stats.value.byProject.map(d => d.inProgress),
-      itemStyle: { color: '#1677FF' },
-    },
-    {
-      name: '待开始',
-      type: 'bar',
-      stack: 'task',
-      data: stats.value.byProject.map(d => d.pending),
-      itemStyle: { color: '#C9CDD4', borderRadius: [0, 4, 4, 0] },
-    },
-  ],
-}))
+const totalTasks = computed(() => 622)
 </script>
 
 <style scoped>
 .widget-card { height: 100%; }
-.completion-badge {
+.todo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #F0F2F5;
+}
+.todo-tabs {
+  display: flex;
+  gap: 24px;
+}
+.todo-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.todo-tab.active {
+  color: #1677FF;
+  font-weight: 600;
+}
+.todo-tab-text {
+  font-size: 14px;
+}
+.todo-badge {
+  background: #FF4D4F;
+  color: white;
   font-size: 12px;
-  color: var(--color-text-secondary);
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
 }
-.task-overview {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  margin-bottom: 12px;
+.todo-total {
+  font-size: 12px;
+  color: #86909C;
 }
-.task-stat {
+.todo-list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+.todo-item {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  background: #F8FAFE;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 16px;
   border-radius: 8px;
-  transition: all 0.2s;
+  margin-bottom: 8px;
+  background: #FFFFFF;
+  border: 1px solid #F0F2F5;
+  transition: all 0.3s;
 }
-.task-stat:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+.todo-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-color: #E8ECF0;
 }
-.task-stat-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.todo-item-content {
+  flex: 1;
+  min-width: 0;
 }
-.task-stat-info {
+.todo-item-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1D2129;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.todo-item-meta {
+  font-size: 12px;
+  color: #86909C;
+}
+.todo-item-right {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: 16px;
 }
-.task-stat-num {
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
+.todo-item-tag {
+  background: #E6F7FF;
+  color: #1677FF;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
-.task-stat-label {
-  font-size: 11px;
-  color: var(--color-text-tertiary);
+.todo-item-deadline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #FF4D4F;
+}
+.todo-item-deadline-icon {
+  font-size: 14px;
 }
 </style>
