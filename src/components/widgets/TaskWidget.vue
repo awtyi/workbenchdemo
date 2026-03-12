@@ -39,9 +39,6 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useWorkbenchStore } from '@/stores/workbench'
-
-const store = useWorkbenchStore()
 
 // 模拟待办任务数据
 const todoList = ref([
