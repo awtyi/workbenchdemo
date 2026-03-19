@@ -42,10 +42,13 @@ const ready = ref(false)
 onMounted(() => { ready.value = true })
 
 const statusList = computed(() => [
-  { key: 'inProgress', name: '进行中', value: stats.value.inProgress, color: '#1677FF' },
-  { key: 'completed', name: '已完成', value: stats.value.completed, color: '#52C41A' },
-  { key: 'overdue', name: '已逾期', value: stats.value.overdue, color: '#FF4D4F' },
-  { key: 'suspended', name: '已暂停', value: stats.value.suspended, color: '#FAAD14' },
+  { key: 'planned', name: '计划中', value: stats.value.planned, color: '#1677FF' },
+  { key: 'inProgress', name: '进行中', value: stats.value.inProgress, color: '#13C2C2' },
+  { key: 'overdue', name: '逾期', value: stats.value.overdue, color: '#FF4D4F' },
+  { key: 'suspended', name: '暂停', value: stats.value.suspended, color: '#FAAD14' },
+  { key: 'terminated', name: '终止', value: stats.value.terminated, color: '#86909C' },
+  { key: '验收中', name: '验收中', value: stats.value.验收中, color: '#722ED1' },
+  { key: '待结项', name: '待结项', value: stats.value.待结项, color: '#52C41A' },
 ])
 
 const getPercent = (val: number) => {
@@ -105,11 +108,17 @@ const chartOption = computed(() => ({
 /* 2×2 图例网格 */
 .legend-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 16px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
   width: 100%;
   margin-top: 12px;
   padding: 0 8px;
+}
+
+@media (max-width: 768px) {
+  .legend-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .legend-item {

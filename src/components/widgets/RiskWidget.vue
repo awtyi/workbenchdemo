@@ -4,7 +4,7 @@
       <span class="widget-title-dot" />风险预警
     </template>
     <template #extra>
-      <a-badge status="error" :text="`${stats.unhandled} 项待处理`" />
+      <a-badge status="error" :text="`${unclosedRisks} 项未关闭`" />
     </template>
     <div class="risk-content">
       <div class="chart-wrap">
@@ -66,6 +66,11 @@ use([PieChart, TooltipComponent, CanvasRenderer])
 const store = useWorkbenchStore()
 const stats = computed(() => store.riskStats)
 const ready = ref(false)
+
+// 计算未关闭的风险数量
+const unclosedRisks = computed(() => {
+  return stats.value.high + stats.value.medium + stats.value.low
+})
 
 const levelText: Record<string, string> = { high: '高', medium: '中', low: '低' }
 

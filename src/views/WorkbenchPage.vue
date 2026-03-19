@@ -57,13 +57,6 @@
           <div class="stat-card-value">{{ card.value }}</div>
           <div class="stat-card-label">{{ card.label }}</div>
         </div>
-        <div class="stat-card-trend" v-if="card.trend !== undefined">
-          <ArrowUpOutlined v-if="card.trend > 0" class="trend-icon up" />
-          <ArrowDownOutlined v-else-if="card.trend < 0" class="trend-icon down" />
-          <span :class="['trend-text', card.trend > 0 ? 'up' : 'down']">
-            {{ Math.abs(card.trend) }}%
-          </span>
-        </div>
         <div class="stat-card-decorator" />
       </div>
     </div>
@@ -107,14 +100,12 @@ import { computed } from 'vue'
 import {
   HomeOutlined,
   ReloadOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  ProjectOutlined,
-  MailOutlined,
   WarningOutlined,
-  DollarOutlined,
   CalendarOutlined,
-  CheckSquareOutlined,
+  PauseCircleOutlined,
+  ExclamationCircleOutlined,
+  RocketOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons-vue'
 import WorkbenchLayout from '@/components/layout/WorkbenchLayout.vue'
 import ProjectStatusWidget from '@/components/widgets/ProjectStatusWidget.vue'
@@ -144,32 +135,27 @@ const timeRangeOptions = [
 ]
 
 const overviewCards = computed(() => {
-  const { projectStats, taskStats, riskStats, budgetStats } = store
-  const taskRate = taskStats.total > 0
-    ? Math.round((taskStats.completed / taskStats.total) * 100)
-    : 0
-  const budgetRate = budgetStats.totalBudget > 0
-    ? Math.round((budgetStats.spent / budgetStats.totalBudget) * 100)
-    : 0
+  const { projectStats, riskStats, milestoneStats } = store
+  
+  // 计算未关闭风险数量
+  const unclosedRisks = riskStats.high + riskStats.medium + riskStats.low
 
   return [
-    {
-      key: 'totalProject',
-      label: '项目总数',
-      value: projectStats.total,
-      icon: ProjectOutlined,
-      color: '#1677FF',
-      bg: 'rgba(22,119,255,0.08)',
-      trend: 5,
-    },
     {
       key: 'inProgress',
       label: '进行中项目',
       value: projectStats.inProgress,
       icon: CalendarOutlined,
+      color: '#1677FF',
+      bg: 'rgba(22,119,255,0.08)',
+    },
+    {
+      key: 'suspended',
+      label: '暂停项目',
+      value: projectStats.suspended,
+      icon: PauseCircleOutlined,
       color: '#13C2C2',
       bg: 'rgba(19,194,194,0.08)',
-      trend: 2,
     },
     {
       key: 'overdue',
@@ -178,34 +164,30 @@ const overviewCards = computed(() => {
       icon: WarningOutlined,
       color: '#FF4D4F',
       bg: 'rgba(255,77,79,0.08)',
-      trend: -1,
     },
     {
-      key: 'riskUnhandled',
-      label: '待处理风险',
-      value: riskStats.unhandled,
-      icon: MailOutlined,
+      key: 'unclosedRisks',
+      label: '未关闭风险',
+      value: unclosedRisks,
+      icon: ExclamationCircleOutlined,
       color: '#FAAD14',
       bg: 'rgba(250,173,20,0.08)',
-      trend: undefined,
     },
     {
-      key: 'taskRate',
-      label: '任务完成率',
-      value: `${taskRate}%`,
-      icon: CheckSquareOutlined,
+      key: 'monthlyPlannedMilestones',
+      label: '当月计划完成里程碑',
+      value: milestoneStats.monthlyPlanned,
+      icon: RocketOutlined,
       color: '#52C41A',
       bg: 'rgba(82,196,26,0.08)',
-      trend: 3,
     },
     {
-      key: 'budgetRate',
-      label: '预算执行率',
-      value: `${budgetRate}%`,
-      icon: DollarOutlined,
+      key: 'uncompletedMilestones',
+      label: '当月未完成里程碑',
+      value: milestoneStats.monthlyPlanned - milestoneStats.monthlyCompleted,
+      icon: ClockCircleOutlined,
       color: '#722ED1',
       bg: 'rgba(114,46,209,0.08)',
-      trend: undefined,
     },
   ]
 })
@@ -331,33 +313,7 @@ const overviewCards = computed(() => {
   margin-top: 2px;
 }
 
-.stat-card-trend {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
 
-.trend-icon {
-  font-size: 10px;
-}
-
-.trend-icon.up,
-.trend-text.up {
-  color: #FF4D4F;
-}
-
-.trend-icon.down,
-.trend-text.down {
-  color: #52C41A;
-}
-
-.trend-text {
-  font-size: 11px;
-  font-weight: 600;
-}
 
 .stat-card-decorator {
   position: absolute;

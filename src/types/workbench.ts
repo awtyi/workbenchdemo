@@ -1,10 +1,20 @@
 // 项目数据类型
 export interface ProjectStats {
   total: number
+  planned: number
   inProgress: number
-  completed: number
   overdue: number
   suspended: number
+  terminated: number
+ 验收中: number
+  待结项: number
+}
+
+// 里程碑数据类型
+export interface MilestoneStats {
+  monthlyPlanned: number
+  monthlyCompleted: number
+  totalUncompleted: number
 }
 
 // 函件数据类型
@@ -82,5 +92,6 @@ export interface WorkbenchData {
   budgetStats: BudgetStats
   planStats: PlanStats
   taskStats: TaskStats
+  milestoneStats: MilestoneStats
   lastUpdated: string
 }

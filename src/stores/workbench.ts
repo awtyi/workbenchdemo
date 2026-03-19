@@ -15,6 +15,7 @@ export const useWorkbenchStore = defineStore('workbench', () => {
   const budgetStats = computed(() => data.value.budgetStats)
   const planStats = computed(() => data.value.planStats)
   const taskStats = computed(() => data.value.taskStats)
+  const milestoneStats = computed(() => data.value.milestoneStats)
   const lastUpdated = computed(() => data.value.lastUpdated)
 
   const taskCompletionRate = computed(() => {
@@ -40,6 +41,7 @@ export const useWorkbenchStore = defineStore('workbench', () => {
     budgetStats,
     planStats,
     taskStats,
+    milestoneStats,
     lastUpdated,
     taskCompletionRate,
     refreshData,

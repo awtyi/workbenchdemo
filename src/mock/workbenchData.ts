@@ -5,10 +5,19 @@ export const mockWorkbenchData: WorkbenchData = {
 
   projectStats: {
     total: 42,
-    inProgress: 18,
-    completed: 16,
+    planned: 8,
+    inProgress: 15,
     overdue: 5,
     suspended: 3,
+    terminated: 2,
+    验收中: 6,
+    待结项: 3,
+  },
+
+  milestoneStats: {
+    monthlyPlanned: 12,
+    monthlyCompleted: 8,
+    totalUncompleted: 15,
   },
 
   letterStats: {
@@ -25,10 +34,10 @@ export const mockWorkbenchData: WorkbenchData = {
   },
 
   riskStats: {
-    high: 8,
-    medium: 15,
-    low: 23,
-    unhandled: 12,
+    high: 5,
+    medium: 10,
+    low: 19,
+    unhandled: 8,
     items: [
       { id: 'R001', name: '供应链延误导致进度滞后', level: 'high', project: '华东智能制造基地项目', status: '分析中', date: '2026-03-10' },
       { id: 'R002', name: '关键设备采购超预算', level: 'high', project: '北京数据中心扩建项目', status: '应对中', date: '2026-03-09' },

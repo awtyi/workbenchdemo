@@ -1,34 +1,24 @@
 <template>
   <a-card class="widget-card">
     <template #title>
-      <span class="widget-title-dot" />项目计划完成率
-    </template>
-    <template #extra>
-      <div class="rate-badge" :class="stats.currentRate >= stats.baseline ? 'good' : 'warn'">
-        本月 {{ stats.currentRate }}%
-        <span class="diff">
-          <CaretUpOutlined v-if="stats.currentRate >= stats.baseline" />
-          <CaretDownOutlined v-else />
-          {{ Math.abs(stats.currentRate - stats.baseline).toFixed(1) }}%
-        </span>
-      </div>
+      <span class="widget-title-dot" />年度计划完成率
     </template>
     <div class="plan-summary">
       <div class="plan-stat">
-        <span class="plan-stat-value" style="color: #1677FF">{{ stats.currentRate }}%</span>
-        <span class="plan-stat-label">实际完成率</span>
+        <span class="plan-stat-value" style="color: #1677FF">{{ actualCompleted }}</span>
+        <span class="plan-stat-label">实际累积完成数量</span>
       </div>
       <div class="plan-stat-divider" />
       <div class="plan-stat">
-        <span class="plan-stat-value" style="color: #86909C">{{ stats.baseline }}%</span>
-        <span class="plan-stat-label">计划基准</span>
+        <span class="plan-stat-value" style="color: #86909C">{{ plannedCompleted }}</span>
+        <span class="plan-stat-label">计划完成数量</span>
       </div>
       <div class="plan-stat-divider" />
       <div class="plan-stat">
-        <span class="plan-stat-value" :style="{ color: stats.currentRate >= stats.baseline ? '#52C41A' : '#FF4D4F' }">
-          {{ stats.currentRate >= stats.baseline ? '+' : '' }}{{ (stats.currentRate - stats.baseline).toFixed(1) }}%
+        <span class="plan-stat-value" :style="{ color: deviationRate >= 0 ? '#52C41A' : '#FF4D4F' }">
+          {{ deviationRate >= 0 ? '+' : '' }}{{ deviationRate.toFixed(1) }}%
         </span>
-        <span class="plan-stat-label">偏差值</span>
+        <span class="plan-stat-label">偏差率</span>
       </div>
     </div>
     <v-chart v-show="ready" :option="chartOption" autoresize lazy-init style="height: 190px;" />
@@ -42,15 +32,59 @@ import { LineChart } from 'echarts/charts'
 import { TooltipComponent, GridComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import VChart from 'vue-echarts'
-import { CaretUpOutlined, CaretDownOutlined } from '@ant-design/icons-vue'
-import { useWorkbenchStore } from '@/stores/workbench'
-
 use([LineChart, TooltipComponent, GridComponent, CanvasRenderer])
 
-const store = useWorkbenchStore()
-const stats = computed(() => store.planStats)
 const ready = ref(false)
 onMounted(() => { ready.value = true })
+
+// 模拟数据：实际完成数量和计划完成数量
+const monthlyData = [
+  { month: '1月', actual: 14, planned: 15 },
+  { month: '2月', actual: 27, planned: 30 },
+  { month: '3月', actual: 55, planned: 55 },
+  { month: '4月', actual: 80, planned: 80 },
+  { month: '5月', actual: 100, planned: 105 },
+  { month: '6月', actual: 129, planned: 130 },
+  { month: '7月', actual: 155, planned: 155 },
+  { month: '8月', actual: 180, planned: 180 },
+  { month: '9月', actual: 200, planned: 205 },
+  { month: '10月', actual: 230, planned: 230 },
+  { month: '11月', actual: 250, planned: 255 },
+  { month: '12月', actual: 285, planned: 280 },
+]
+
+// 计算累积数据
+const cumulativeData = computed(() => {
+  let actualSum = 0
+  let plannedSum = 0
+  return monthlyData.map(item => {
+    actualSum += item.actual
+    plannedSum += item.planned
+    return {
+      month: item.month,
+      actual: actualSum,
+      planned: plannedSum,
+      ratio: plannedSum > 0 ? (actualSum / plannedSum) * 100 : 0
+    }
+  })
+})
+
+// 计算到本月的实际累积完成数量
+const actualCompleted = computed(() => {
+  return cumulativeData.value[cumulativeData.value.length - 1].actual
+})
+
+// 计算到本月的计划完成数量
+const plannedCompleted = computed(() => {
+  return cumulativeData.value[cumulativeData.value.length - 1].planned
+})
+
+// 计算偏差率
+const deviationRate = computed(() => {
+  const actual = actualCompleted.value
+  const planned = plannedCompleted.value
+  return planned > 0 ? ((actual - planned) / planned) * 100 : 0
+})
 
 const chartOption = computed(() => ({
   tooltip: {
@@ -63,7 +97,7 @@ const chartOption = computed(() => ({
       params.forEach((p: any) => {
         str += `<div style="display:flex;justify-content:space-between;gap:16px;">
           <span>${p.marker}${p.seriesName}</span>
-          <span style="font-weight:600;">${p.value}%</span>
+          <span style="font-weight:600;">${p.value.toFixed(1)}%</span>
         </div>`
       })
       return str
@@ -72,33 +106,23 @@ const chartOption = computed(() => ({
   grid: { top: 8, right: 10, bottom: 24, left: 40 },
   xAxis: {
     type: 'category',
-    data: stats.value.monthlyRate.map(d => d.month),
+    data: cumulativeData.value.map(d => d.month),
     axisLine: { lineStyle: { color: '#E8ECF0' } },
     axisTick: { show: false },
     axisLabel: { color: '#86909C', fontSize: 12 },
   },
   yAxis: {
     type: 'value',
-    min: 50,
-    max: 100,
+    min: 70,
+    max: 110,
     splitLine: { lineStyle: { color: '#F0F2F5', type: 'dashed' } },
     axisLabel: { color: '#86909C', fontSize: 11, formatter: '{value}%' },
   },
   series: [
     {
-      name: '计划基准',
+      name: '每月累积比例',
       type: 'line',
-      data: stats.value.monthlyRate.map(d => d.planned),
-      smooth: true,
-      lineStyle: { color: '#C9CDD4', width: 2, type: 'dashed' },
-      itemStyle: { color: '#C9CDD4' },
-      symbol: 'circle',
-      symbolSize: 5,
-    },
-    {
-      name: '实际完成率',
-      type: 'line',
-      data: stats.value.monthlyRate.map(d => d.actual),
+      data: cumulativeData.value.map(d => d.ratio),
       smooth: true,
       lineStyle: { color: '#1677FF', width: 3 },
       itemStyle: { color: '#1677FF', borderWidth: 3, borderColor: '#fff', shadowBlur: 6, shadowColor: 'rgba(22,119,255,0.4)' },
@@ -114,18 +138,6 @@ const chartOption = computed(() => ({
 
 <style scoped>
 .widget-card { height: 100%; }
-.rate-badge {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 20px;
-}
-.rate-badge.good { background: rgba(82, 196, 26, 0.1); color: #52C41A; }
-.rate-badge.warn { background: rgba(255, 77, 79, 0.1); color: #FF4D4F; }
-.diff { font-size: 12px; display: flex; align-items: center; gap: 2px; }
 .plan-summary {
   display: flex;
   align-items: center;
