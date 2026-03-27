@@ -90,7 +90,7 @@ const totalTasks = computed(() => 622)
 </script>
 
 <style scoped>
-.widget-card { height: 100%; }
+.widget-card { height: 100%; max-height: 380px; /* 设置最大高度 */ }
 .todo-header {
   display: flex;
   justify-content: space-between;

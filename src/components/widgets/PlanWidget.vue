@@ -137,7 +137,7 @@ const chartOption = computed(() => ({
 </script>
 
 <style scoped>
-.widget-card { height: 100%; }
+.widget-card { height: 100%; max-height: 380px; /* 设置最大高度 */ }
 .plan-summary {
   display: flex;
   align-items: center;

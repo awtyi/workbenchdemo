@@ -73,11 +73,16 @@
         <RiskWidget />
       </a-col>
     </a-row>
-
+    <div style="margin-top: 16px;"></div>
     <!-- 图表区域 - 第二行 -->
     <a-row :gutter="[16, 16]" class="widget-row">
       <a-col :span="8">
-        <BudgetWidget />
+        <div class="budget-section">
+          <BudgetWidget />
+          <div style="margin-top: 16px;">
+            <CostTrendWidget />
+          </div>
+        </div>
       </a-col>
       <a-col :span="8">
         <PlanWidget />
@@ -112,6 +117,7 @@ import ProjectStatusWidget from '@/components/widgets/ProjectStatusWidget.vue'
 import LetterStatsWidget from '@/components/widgets/LetterStatsWidget.vue'
 import RiskWidget from '@/components/widgets/RiskWidget.vue'
 import BudgetWidget from '@/components/widgets/BudgetWidget.vue'
+import CostTrendWidget from '@/components/widgets/CostTrendWidget.vue'
 import PlanWidget from '@/components/widgets/PlanWidget.vue'
 import TaskWidget from '@/components/widgets/TaskWidget.vue'
 import { useWorkbenchStore } from '@/stores/workbench'
